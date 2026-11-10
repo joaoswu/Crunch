@@ -1,0 +1,16 @@
+## Visual Studio / .NET / Build output
+bin/
+obj/
+dist/
+release/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+
+## Temporary test files
+*.tmp
+*.log

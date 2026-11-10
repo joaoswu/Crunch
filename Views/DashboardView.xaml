@@ -1,0 +1,385 @@
+<UserControl x:Class="Crunch.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             FontFamily="{StaticResource AppFont}"
+             d:DesignHeight="750" d:DesignWidth="920">
+    <Grid Margin="36,28,36,28">
+        <Grid.RowDefinitions>
+            <!-- Hero Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Drive Consumption Card -->
+            <RowDefinition Height="Auto"/>
+            <!-- Section Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Cleanup Cards List -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 1. Hero Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                <TextBlock Text="Storage Overview" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBlock Text="Analyze and purge temporary files, caches, and system bloat with surgical precision." 
+                           FontSize="13" 
+                           Foreground="{StaticResource TextSecondaryBrush}" 
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <!-- Actions -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Live Selected Size Counter Badge -->
+                <Border Background="#101F33" 
+                        BorderBrush="#1E3A5F" 
+                        BorderThickness="1" 
+                        CornerRadius="6" 
+                        Padding="12,6" 
+                        Margin="0,0,12,0" 
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding SelectedTempCount, StringFormat='Selected: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Text="  •  " FontSize="12" Foreground="{StaticResource TextDimBrush}"/>
+                        <TextBlock Text="{Binding FormattedSelectedTempSize}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <Button Content="Analyze Temp Files" 
+                        Style="{StaticResource SecondaryButtonStyle}" 
+                        Command="{Binding ScanTempCategoriesCommand}"
+                        Margin="0,0,12,0"/>
+                <Button Content="{Binding SelectedTempButtonText}" 
+                        Style="{StaticResource EmeraldCtaButtonStyle}" 
+                        Command="{Binding CleanTempCategoriesCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- 2. Drive Consumption Card -->
+        <Border Grid.Row="1" 
+                Background="{StaticResource CardBrush}" 
+                BorderBrush="{StaticResource BorderCardBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="22,18" 
+                Margin="0,0,0,24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Top Row: Drive Name + Capacity -->
+                <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Icon Surface -->
+                        <Border Width="32" Height="32" CornerRadius="6" Background="{StaticResource InputBrush}" BorderBrush="{StaticResource BorderHairlineBrush}" BorderThickness="1" Margin="0,0,12,0">
+                            <Path Data="{StaticResource ServerIconData}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding SelectedDrive.DisplayName, FallbackValue='Local Disk (C:)'}" FontWeight="Bold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <Border Background="{StaticResource InputBrush}" BorderBrush="{StaticResource BorderHairlineBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="NTFS" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Free / Total Counter -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SelectedDrive.FormattedFree, FallbackValue='627.38 GB'}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource AccentGreenBrush}"/>
+                        <TextBlock Text=" free of " FontSize="13" Foreground="{StaticResource TextMutedBrush}" Margin="4,0,4,0"/>
+                        <TextBlock Text="{Binding SelectedDrive.FormattedTotal, FallbackValue='1861.17 GB'}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Visual Meter (8px pill track) -->
+                <ProgressBar Grid.Row="1" 
+                             Height="8" 
+                             Value="{Binding SelectedDrive.UsedPercentage, Mode=OneWay, FallbackValue=65}" 
+                             Maximum="100"/>
+
+                <!-- Bottom Stats Row -->
+                <Grid Grid.Row="2" Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <TextBlock Text="Used: " FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                        <TextBlock Text="{Binding SelectedDrive.FormattedUsed, FallbackValue='1233.8 GB'}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Text="  •  Free: " FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
+                        <TextBlock Text="{Binding SelectedDrive.FormattedFree, FallbackValue='627.38 GB'}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="1" 
+                               Text="Primary System Volume" 
+                               FontSize="11" 
+                               Foreground="{StaticResource TextDimBrush}"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- 3. Section Header with Filter Pills and Select All Action -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" 
+                       Text="CLEANUP TARGETS" 
+                       FontSize="11" 
+                       FontWeight="Bold" 
+                       Foreground="{StaticResource TextMutedBrush}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,16,0"/>
+
+            <!-- Category Filter Pills -->
+            <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                <RadioButton Content="All Targets" 
+                             GroupName="TempFilterPills" 
+                             Style="{StaticResource PillRadioTabStyle}" 
+                             IsChecked="True"
+                             Command="{Binding FilterTempCategoriesCommand}"
+                             CommandParameter="All"/>
+                <RadioButton Content="System &amp; Windows" 
+                             GroupName="TempFilterPills" 
+                             Style="{StaticResource PillRadioTabStyle}" 
+                             Command="{Binding FilterTempCategoriesCommand}"
+                             CommandParameter="System"/>
+                <RadioButton Content="Gaming &amp; Shaders" 
+                             GroupName="TempFilterPills" 
+                             Style="{StaticResource PillRadioTabStyle}" 
+                             Command="{Binding FilterTempCategoriesCommand}"
+                             CommandParameter="Gaming"/>
+                <RadioButton Content="Dev &amp; Packages" 
+                             GroupName="TempFilterPills" 
+                             Style="{StaticResource PillRadioTabStyle}" 
+                             Command="{Binding FilterTempCategoriesCommand}"
+                             CommandParameter="Developer"/>
+                <RadioButton Content="Web &amp; Media" 
+                             GroupName="TempFilterPills" 
+                             Style="{StaticResource PillRadioTabStyle}" 
+                             Command="{Binding FilterTempCategoriesCommand}"
+                             CommandParameter="Media"/>
+            </WrapPanel>
+
+            <Button Grid.Column="2" 
+                    Content="Select / Deselect All" 
+                    Style="{StaticResource SecondaryButtonStyle}" 
+                    Height="26" 
+                    Padding="10,0"
+                    FontSize="11"
+                    Command="{Binding ToggleSelectAllTempCommand}"/>
+        </Grid>
+
+        <!-- 4. Temp Cleaner Cards List -->
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,6,0">
+            <ItemsControl ItemsSource="{Binding TempCategories}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- High-Polish Action Card (76px height) -->
+                        <Border Height="76"
+                                Background="{StaticResource CardBrush}"
+                                BorderBrush="{StaticResource BorderCardBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="18,14"
+                                Margin="0,0,4,10"
+                                Visibility="{Binding IsVisibleInFilter, Converter={StaticResource BoolToVisibilityConverter}}"
+                                ClipToBounds="True">
+                            <Grid>
+                                <!-- Background Watermark (3% opacity) -->
+                                <Path HorizontalAlignment="Right" 
+                                      VerticalAlignment="Center"
+                                      Data="{StaticResource FlameIconData}" 
+                                      Stroke="#FFFFFF" 
+                                      StrokeThickness="1.2" 
+                                      Opacity="0.03" 
+                                      Width="72" Height="72" 
+                                      Stretch="Uniform" 
+                                      Margin="0,0,-12,0"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 1. Checkbox -->
+                                    <CheckBox Grid.Column="0" 
+                                              IsChecked="{Binding IsSelected}" 
+                                              VerticalAlignment="Center" 
+                                              Margin="0,0,16,0"/>
+
+                                    <!-- 2. Distinct Colored Icon Box -->
+                                    <Border Grid.Column="1" 
+                                            Width="38" Height="38" 
+                                            CornerRadius="6" 
+                                            Background="{StaticResource InputBrush}" 
+                                            BorderBrush="{StaticResource BorderHairlineBrush}" 
+                                            BorderThickness="1" 
+                                            Margin="0,0,16,0" 
+                                            VerticalAlignment="Center">
+                                        <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <ContentControl.Style>
+                                                <Style TargetType="ContentControl">
+                                                    <!-- Default icon -->
+                                                    <Setter Property="Content">
+                                                        <Setter.Value>
+                                                            <Path Data="{StaticResource TrashIconData}" Stroke="#A855F7" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="FlameIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource FlameIconData}" Stroke="#F59E0B" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="ServerIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource ServerIconData}" Stroke="#3B82F6" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="DownloadIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource DownloadIconData}" Stroke="#60A5FA" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="BugIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource BugIconData}" Stroke="#EF4444" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="ImageIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource ImageIconData}" Stroke="#EC4899" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="MessageIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource MessageIconData}" Stroke="#6366F1" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="GlobeIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource GlobeIconData}" Stroke="#06B6D4" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="ZapIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource ZapIconData}" Stroke="#F59E0B" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="GamepadIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource GamepadIconData}" Stroke="#818CF8" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="CpuIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource CpuIconData}" Stroke="#34D399" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IconKey}" Value="TerminalIcon">
+                                                            <Setter Property="Content">
+                                                                <Setter.Value>
+                                                                    <Path Data="{StaticResource TerminalIconData}" Stroke="#60A5FA" StrokeThickness="1.5" Width="16" Height="16" Stretch="Uniform"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ContentControl.Style>
+                                        </ContentControl>
+                                    </Border>
+
+                                    <!-- 3. Details: Title & Subtitle -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" 
+                                                   FontSize="14" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding Subtitle}" 
+                                                   FontSize="12" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   Margin="0,3,0,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+
+                                    <!-- 4. Size Pill Badge -->
+                                    <Border Grid.Column="3" 
+                                            Background="#101F33" 
+                                            BorderBrush="#1E3A5F" 
+                                            BorderThickness="1" 
+                                            CornerRadius="4" 
+                                            Padding="10,4" 
+                                            VerticalAlignment="Center" 
+                                            Margin="0,0,16,0">
+                                        <TextBlock Text="{Binding FormattedSize}" 
+                                                   FontSize="12" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="{StaticResource AccentGreenBrush}"/>
+                                    </Border>
+
+                                    <!-- 5. Status Badge -->
+                                    <Border Grid.Column="4" 
+                                            Background="{StaticResource InputBrush}" 
+                                            BorderBrush="{StaticResource BorderHairlineBrush}" 
+                                            BorderThickness="1" 
+                                            CornerRadius="4" 
+                                            Padding="12,6" 
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Status}" 
+                                                   FontSize="11" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

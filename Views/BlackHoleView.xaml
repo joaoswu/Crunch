@@ -1,0 +1,88 @@
+<UserControl x:Class="Crunch.Views.BlackHoleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             FontFamily="{StaticResource AppFont}"
+             d:DesignHeight="750" d:DesignWidth="920">
+    <Grid Margin="36,28,36,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Text="The Black Hole" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="Drop any stubborn folder or file here to release active process locks and permanently delete it." 
+                       FontSize="13" 
+                       Foreground="{StaticResource TextSecondaryBrush}" 
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- The Drop Target Zone -->
+        <Border Grid.Row="1" 
+                x:Name="DropZoneBorder"
+                Background="{StaticResource CardBrush}" 
+                BorderBrush="{StaticResource BorderCardBrush}" 
+                BorderThickness="2" 
+                CornerRadius="12" 
+                Padding="40"
+                AllowDrop="True"
+                DragEnter="OnDragEnter"
+                DragLeave="OnDragLeave"
+                Drop="OnDrop">
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center">
+                    <!-- Icon with ambient radial glow -->
+                    <Grid Width="96" Height="96" HorizontalAlignment="Center" Margin="0,0,0,24">
+                        <Ellipse Width="96" Height="96" Fill="{StaticResource AccentGreenGlowBrush}"/>
+                        <Border Width="72" Height="72" 
+                                CornerRadius="36" 
+                                Background="{StaticResource InputBrush}" 
+                                BorderBrush="{StaticResource BorderHairlineBrush}" 
+                                BorderThickness="1"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                            <Path Data="{StaticResource BlackHoleIconData}" 
+                                  Stroke="{StaticResource AccentCTABrush}" 
+                                  StrokeThickness="1.5" 
+                                  Width="32" Height="32" 
+                                  Stretch="Uniform" 
+                                  HorizontalAlignment="Center" 
+                                  VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Text="{Binding BlackHoleStatus}" 
+                               FontSize="17" 
+                               FontWeight="SemiBold" 
+                               Foreground="{StaticResource TextPrimaryBrush}" 
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"/>
+
+                    <TextBlock Text="{Binding BlackHoleDropPath}" 
+                               FontSize="12" 
+                               Foreground="{StaticResource TextDimBrush}" 
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,8,0,28"
+                               MaxWidth="650"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <!-- Shred Action Card if item dropped -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="Force Delete" 
+                                Style="{StaticResource DangerButtonStyle}" 
+                                Height="38"
+                                Padding="24,0"
+                                FontSize="13"
+                                Command="{Binding ShredBlackHoleTargetCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

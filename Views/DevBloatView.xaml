@@ -1,0 +1,417 @@
+<UserControl x:Class="Crunch.Views.DevBloatView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             FontFamily="{StaticResource AppFont}"
+             d:DesignHeight="750" d:DesignWidth="920">
+    <Grid Margin="36,28,36,28">
+        <Grid.RowDefinitions>
+            <!-- 0. Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- 1. Mode Pill Selector -->
+            <RowDefinition Height="Auto"/>
+            <!-- 2. Informative Callout Card -->
+            <RowDefinition Height="Auto"/>
+            <!-- 3. List Content -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 0. Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                <TextBlock Text="Code &amp; System Hygiene" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBlock Text="Purge heavyweight development build targets or hunt down abandoned orphaned software remnants." 
+                           FontSize="13" 
+                           Foreground="{StaticResource TextSecondaryBrush}" 
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <!-- Top Actions -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Projects Mode Actions -->
+                <StackPanel Orientation="Horizontal" Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Projects'}">
+                    <Button Content="Scan Projects" 
+                            Style="{StaticResource SecondaryButtonStyle}" 
+                            Command="{Binding ScanDevBloatCommand}"
+                            Margin="0,0,12,0"/>
+                    <Button Content="Delete Selected" 
+                            Style="{StaticResource EmeraldCtaButtonStyle}" 
+                            Command="{Binding PurgeSelectedDevBloatCommand}"/>
+                </StackPanel>
+
+                <!-- Orphans Mode Actions -->
+                <StackPanel Orientation="Horizontal" Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Orphans'}">
+                    <Button Content="Scan Orphaned Folders" 
+                            Style="{StaticResource SecondaryButtonStyle}" 
+                            Command="{Binding ScanOrphansCommand}"
+                            Margin="0,0,12,0"/>
+                    <Button Content="Purge Selected Orphans" 
+                            Style="{StaticResource EmeraldCtaButtonStyle}" 
+                            Command="{Binding PurgeSelectedOrphansCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- 1. Mode Pill Selector -->
+        <Border Grid.Row="1" 
+                Background="{StaticResource CardBrush}" 
+                BorderBrush="{StaticResource BorderCardBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="14,10" 
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <WrapPanel Grid.Column="0" VerticalAlignment="Center">
+                    <RadioButton Content="Project Dependencies (node_modules, target, bin/obj)" 
+                                 GroupName="DevHygieneTabs" 
+                                 Style="{StaticResource PillRadioTabStyle}" 
+                                 IsChecked="True" 
+                                 Command="{Binding SetDevTabCommand}" 
+                                 CommandParameter="Projects"/>
+
+                    <RadioButton Content="Ghost App &amp; Orphan Hunter" 
+                                 GroupName="DevHygieneTabs" 
+                                 Style="{StaticResource PillRadioTabStyle}" 
+                                 Command="{Binding SetDevTabCommand}" 
+                                 CommandParameter="Orphans"/>
+                </WrapPanel>
+
+                <!-- Select All & Totals -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Button Content="Select / Deselect All" 
+                            Style="{StaticResource SecondaryButtonStyle}" 
+                            Height="28" 
+                            Padding="12,0"
+                            FontSize="11"
+                            Command="{Binding ToggleSelectAllDevBloatCommand}"
+                            Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Projects'}"
+                            Margin="0,0,10,0"/>
+
+                    <Button Content="Select / Deselect All" 
+                            Style="{StaticResource SecondaryButtonStyle}" 
+                            Height="28" 
+                            Padding="12,0"
+                            FontSize="11"
+                            Command="{Binding ToggleSelectAllOrphansCommand}"
+                            Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Orphans'}"
+                            Margin="0,0,10,0"/>
+
+                    <!-- Projects Totals -->
+                    <Border Background="#101F33" 
+                            BorderBrush="#1E3A5F" 
+                            BorderThickness="1" 
+                            CornerRadius="4" 
+                            Padding="10,5"
+                            Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Projects'}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding DevBloatItems.Count, StringFormat='Targets: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="  •  " FontSize="12" Foreground="{StaticResource TextDimBrush}"/>
+                            <TextBlock Text="{Binding FormattedTotalDevBloatSize}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Orphans Totals -->
+                    <Border Background="#101F33" 
+                            BorderBrush="#1E3A5F" 
+                            BorderThickness="1" 
+                            CornerRadius="4" 
+                            Padding="10,5"
+                            Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Orphans'}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding OrphanAppItems.Count, StringFormat='Orphans: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="  •  " FontSize="12" Foreground="{StaticResource TextDimBrush}"/>
+                            <TextBlock Text="{Binding FormattedTotalOrphanSize}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 2. Informative Callout Card -->
+        <!-- Projects Callout -->
+        <Border Grid.Row="2" 
+                Background="{StaticResource CardBrush}" 
+                BorderBrush="{StaticResource BorderCardBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="16,12" 
+                Margin="0,0,0,16"
+                Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Projects'}">
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Width="28" Height="28" CornerRadius="6" Background="{StaticResource InputBrush}" BorderBrush="{StaticResource BorderHairlineBrush}" BorderThickness="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Path Data="{StaticResource CodeIconData}" Stroke="{StaticResource AccentBlueBrush}" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Grid.Column="1" 
+                           Text="Build caches and virtual environments can always be safely regenerated on demand. Purging them reclaims huge disk space." 
+                           FontSize="12" 
+                           Foreground="{StaticResource TextSecondaryBrush}" 
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Orphans Callout -->
+        <Border Grid.Row="2" 
+                Background="{StaticResource CardBrush}" 
+                BorderBrush="{StaticResource BorderCardBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="16,12" 
+                Margin="0,0,0,16"
+                Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Orphans'}">
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Width="28" Height="28" CornerRadius="6" Background="{StaticResource InputBrush}" BorderBrush="{StaticResource BorderHairlineBrush}" BorderThickness="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Path Data="{StaticResource GhostIconData}" Stroke="#A855F7" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Grid.Column="1" 
+                           Text="Uninstalled software frequently leaves gigabytes behind in AppData and ProgramData. Orphan Hunter verifies registry keys to flag abandoned folders." 
+                           FontSize="12" 
+                           Foreground="{StaticResource TextSecondaryBrush}" 
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- 3. List Content -->
+        <!-- 3A: Projects List -->
+        <Border Grid.Row="3" 
+                Background="{StaticResource CardBrush}" 
+                BorderBrush="{StaticResource BorderCardBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                ClipToBounds="True"
+                Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Projects'}">
+            <ListView ItemsSource="{Binding DevBloatItems}" 
+                      Background="Transparent" 
+                      BorderThickness="0" 
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="True"
+                      VirtualizingStackPanel.IsVirtualizing="True"
+                      VirtualizingStackPanel.VirtualizationMode="Recycling"
+                      VirtualizingStackPanel.ScrollUnit="Pixel"
+                      Padding="0,0,6,0"
+                      Foreground="{StaticResource TextPrimaryBrush}">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderHairlineBrush}"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="Padding" Value="16,12,12,12"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CardHoverBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalAlignment="Center" Margin="0,0,14,0"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis">
+                                    <Run Text="{Binding ProjectName}" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <Run Text="{Binding FolderName, StringFormat=' / {0}'}" Foreground="{StaticResource TextMutedBrush}"/>
+                                </TextBlock>
+                                <TextBlock Text="{Binding FullPath}" FontSize="11" Foreground="{StaticResource TextDimBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <!-- Badge -->
+                            <Border Grid.Column="2" 
+                                    Background="{StaticResource InputBrush}" 
+                                    BorderBrush="{StaticResource BorderHairlineBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="8,3" 
+                                    VerticalAlignment="Center" 
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="{Binding BloatType}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </Border>
+
+                            <!-- Size Pill -->
+                            <Border Grid.Column="3" 
+                                    Background="#101F33" 
+                                    BorderBrush="#1E3A5F" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="8,3" 
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="{Binding FormattedSize}" 
+                                           FontSize="12" 
+                                           FontWeight="Bold" 
+                                           Foreground="{StaticResource AccentGreenBrush}"/>
+                            </Border>
+
+                            <!-- Actions (Always Fixed 72px Width, Never Clipped) -->
+                            <Button Grid.Column="4" 
+                                    Content="Reveal" 
+                                    Style="{StaticResource SecondaryButtonStyle}" 
+                                    Height="28" 
+                                    Width="72"
+                                    Padding="0"
+                                    HorizontalAlignment="Right"
+                                    Command="{Binding DataContext.RevealFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                    CommandParameter="{Binding FullPath}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+
+        <!-- 3B: Orphans List -->
+        <Border Grid.Row="3" 
+                Background="{StaticResource CardBrush}" 
+                BorderBrush="{StaticResource BorderCardBrush}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                ClipToBounds="True"
+                Visibility="{Binding CurrentDevTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Orphans'}">
+            <ListView ItemsSource="{Binding OrphanAppItems}" 
+                      Background="Transparent" 
+                      BorderThickness="0" 
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="True"
+                      VirtualizingStackPanel.IsVirtualizing="True"
+                      VirtualizingStackPanel.VirtualizationMode="Recycling"
+                      VirtualizingStackPanel.ScrollUnit="Pixel"
+                      Padding="0,0,6,0"
+                      Foreground="{StaticResource TextPrimaryBrush}">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderHairlineBrush}"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="Padding" Value="16,12,12,12"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CardHoverBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalAlignment="Center" Margin="0,0,14,0"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <Border Background="{StaticResource InputBrush}" BorderBrush="{StaticResource BorderHairlineBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding LocationType}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentPurpleBrush}"/>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="{Binding FullPath}" FontSize="11" Foreground="{StaticResource TextDimBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <!-- Details -->
+                            <TextBlock Grid.Column="2" 
+                                       Text="{Binding Details}" 
+                                       FontSize="11" 
+                                       Foreground="{StaticResource TextMutedBrush}" 
+                                       VerticalAlignment="Center" 
+                                       Margin="0,0,12,0"/>
+
+                            <!-- Size Pill -->
+                            <Border Grid.Column="3" 
+                                    Background="#101F33" 
+                                    BorderBrush="#1E3A5F" 
+                                    BorderThickness="1" 
+                                    CornerRadius="4" 
+                                    Padding="8,3" 
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="{Binding FormattedSize}" 
+                                           FontSize="12" 
+                                           FontWeight="Bold" 
+                                           Foreground="{StaticResource AccentGreenBrush}"/>
+                            </Border>
+
+                            <!-- Actions (Always Fixed 72px Width, Never Clipped) -->
+                            <Button Grid.Column="4" 
+                                    Content="Reveal" 
+                                    Style="{StaticResource SecondaryButtonStyle}" 
+                                    Height="28" 
+                                    Width="72"
+                                    Padding="0"
+                                    HorizontalAlignment="Right"
+                                    Command="{Binding DataContext.RevealFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                    CommandParameter="{Binding FullPath}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+    </Grid>
+</UserControl>

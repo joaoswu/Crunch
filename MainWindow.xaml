@@ -1,0 +1,262 @@
+<Window x:Class="Crunch.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:Crunch.Views"
+        mc:Ignorable="d"
+        Title="Crunch" 
+        Icon="pack://application:,,,/Assets/app.ico"
+        Height="800" Width="1220"
+        MinHeight="660" MinWidth="1000"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        FontFamily="{StaticResource AppFont}"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        RenderOptions.ClearTypeHint="Enabled"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <!-- Single Unified Chassis Border - Zero Outer Margin, Zero Ghost Outlines -->
+    <Border Background="{StaticResource ChassisBrush}" 
+            BorderBrush="{StaticResource BorderHairlineBrush}" 
+            BorderThickness="1" 
+            CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <!-- Custom Title Bar: 38px -->
+                <RowDefinition Height="38"/>
+                <!-- Workspace -->
+                <RowDefinition Height="*"/>
+                <!-- Status Bar: 26px -->
+                <RowDefinition Height="26"/>
+            </Grid.RowDefinitions>
+
+            <!-- 1. Custom Title Bar with Rounded Top Corners -->
+            <Border Grid.Row="0" 
+                    Background="{StaticResource WindowBrush}" 
+                    BorderBrush="{StaticResource BorderHairlineBrush}" 
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="9,9,0,0"
+                    MouseLeftButtonDown="OnTitleBarMouseDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Official Brand Logo & Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <!-- Official Segmented "C" Logo -->
+                        <Image Source="Assets/logo_full.png" 
+                               Width="20" Height="20" 
+                               Margin="0,0,10,0" 
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               VerticalAlignment="Center"/>
+
+                        <!-- Title -->
+                        <TextBlock Text="CRUNCH" 
+                                   FontWeight="Bold" 
+                                   FontSize="13" 
+                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Right: Window Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Style="{StaticResource TitleBarButtonStyle}" Click="OnMinimizeClick">
+                            <Path Data="{StaticResource WinMinimizeIconData}" 
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
+                                  StrokeThickness="1.2" 
+                                  StrokeStartLineCap="Round" 
+                                  StrokeEndLineCap="Round" 
+                                  Width="10" Height="10" 
+                                  Stretch="Uniform"/>
+                        </Button>
+                        <Button Style="{StaticResource TitleBarButtonStyle}" Click="OnMaximizeClick">
+                            <Path Data="{StaticResource WinMaximizeIconData}" 
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
+                                  StrokeThickness="1.2" 
+                                  StrokeStartLineCap="Round" 
+                                  StrokeEndLineCap="Round" 
+                                  Width="10" Height="10" 
+                                  Stretch="Uniform"/>
+                        </Button>
+                        <Button Style="{StaticResource TitleBarCloseButtonStyle}" Click="OnCloseClick">
+                            <Path Data="{StaticResource WinCloseIconData}" 
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
+                                  StrokeThickness="1.2" 
+                                  StrokeStartLineCap="Round" 
+                                  StrokeEndLineCap="Round" 
+                                  Width="10" Height="10" 
+                                  Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 2. Main Content Split: Sidebar (240px) + Main Surface -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <!-- Sidebar: 240px wide -->
+                    <ColumnDefinition Width="240"/>
+                    <!-- Main Surface -->
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Sidebar -->
+                <Border Grid.Column="0" 
+                        Background="{StaticResource SidebarBrush}" 
+                        BorderBrush="{StaticResource BorderHairlineBrush}" 
+                        BorderThickness="0,0,1,0">
+                    <Grid Margin="14,18,14,18">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Section Header -->
+                        <TextBlock Grid.Row="0" 
+                                   Text="MODULES" 
+                                   FontSize="11" 
+                                   FontWeight="Bold" 
+                                   Foreground="{StaticResource TextDimBrush}" 
+                                   Margin="8,0,0,12"/>
+
+                        <!-- Navigation Items -->
+                        <StackPanel Grid.Row="1">
+                            <!-- Dashboard -->
+                            <Button Style="{StaticResource NavButtonStyle}" 
+                                    Margin="0,0,0,6"
+                                    Command="{Binding SelectTabCommand}" 
+                                    CommandParameter="Dashboard">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource GaugeIconData}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"/>
+                                    <TextBlock Text="Dashboard &amp; Temp" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Sleeping Giants -->
+                            <Button Style="{StaticResource NavButtonStyle}" 
+                                    Margin="0,0,0,6"
+                                    Command="{Binding SelectTabCommand}" 
+                                    CommandParameter="SleepingGiants">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource MoonIconData}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"/>
+                                    <TextBlock Text="Sleeping Giants" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Developer Bloat -->
+                            <Button Style="{StaticResource NavButtonStyle}" 
+                                    Margin="0,0,0,6"
+                                    Command="{Binding SelectTabCommand}" 
+                                    CommandParameter="DevBloat">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource CodeIconData}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"/>
+                                    <TextBlock Text="Developer Bloat" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Duplicate Giants -->
+                            <Button Style="{StaticResource NavButtonStyle}" 
+                                    Margin="0,0,0,6"
+                                    Command="{Binding SelectTabCommand}" 
+                                    CommandParameter="Duplicates">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource CopyIconData}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"/>
+                                    <TextBlock Text="Duplicate Hunter" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- The Black Hole -->
+                            <Button Style="{StaticResource NavButtonStyle}" 
+                                    Margin="0,0,0,6"
+                                    Command="{Binding SelectTabCommand}" 
+                                    CommandParameter="BlackHole">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource BlackHoleIconData}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"/>
+                                    <TextBlock Text="The Black Hole" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Bottom Sidebar Widget: Tally & Mode -->
+                        <Border Grid.Row="2" 
+                                Background="{StaticResource CardBrush}" 
+                                BorderBrush="{StaticResource BorderCardBrush}" 
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="14,12">
+                            <StackPanel>
+                                <TextBlock Text="SPACE RECLAIMED" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextDimBrush}"/>
+                                <TextBlock Text="{Binding FormattedReclaimed, FallbackValue='0.00 GB'}" 
+                                           FontSize="18" 
+                                           FontWeight="Bold" 
+                                           Foreground="{StaticResource AccentGreenBrush}" 
+                                           Margin="0,3,0,10"/>
+
+                                <CheckBox Content="Recycle Bin Safe Mode" 
+                                          IsChecked="{Binding SafeRecycleBinMode}" 
+                                          FontSize="11" 
+                                          Foreground="{StaticResource TextSecondaryBrush}"
+                                          Margin="0,0,0,6"/>
+
+                                <CheckBox Content="Force Process Unlock" 
+                                          IsChecked="{Binding ForceProcessUnlock}" 
+                                          FontSize="11" 
+                                          Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Right Main Canvas -->
+                <Grid Grid.Column="1" Background="{StaticResource SurfaceBrush}">
+                    <!-- Tab Switching Views -->
+                    <views:DashboardView Visibility="{Binding CurrentTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Dashboard'}"/>
+                    
+                    <views:ScannerView Visibility="{Binding CurrentTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='SleepingGiants'}"/>
+                    
+                    <views:DevBloatView Visibility="{Binding CurrentTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='DevBloat'}"/>
+                    
+                    <views:DuplicateView Visibility="{Binding CurrentTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='Duplicates'}"/>
+                    
+                    <views:BlackHoleView Visibility="{Binding CurrentTab, Converter={StaticResource TabToVisibilityConverter}, ConverterParameter='BlackHole'}"/>
+                </Grid>
+            </Grid>
+
+            <!-- 3. Bottom Status Bar with Rounded Bottom Corners -->
+            <Border Grid.Row="2" 
+                    Background="{StaticResource BottomPanelBrush}" 
+                    BorderBrush="{StaticResource BorderHairlineBrush}" 
+                    BorderThickness="0,1,0,0" 
+                    CornerRadius="0,0,9,9"
+                    Padding="16,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Status Message -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse Width="6" Height="6" Fill="{StaticResource AccentGreenBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ScanStatusText}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+
+                    <!-- Right: Quick Vitals -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SelectedDrive.Name, StringFormat='Target: {0}'}" FontSize="11" Foreground="{StaticResource TextDimBrush}" Margin="0,0,12,0"/>
+                        <TextBlock Text="v1.0.0" FontSize="11" Foreground="{StaticResource TextDimBrush}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
